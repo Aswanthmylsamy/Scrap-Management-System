@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from config import Config
-import logging
 import os
 
 # Import blueprints
@@ -19,14 +18,16 @@ app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
 
-# ✅ FIXED CORS (VERY IMPORTANT)
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "https://scrap-management-system-6a4rjwi7a-aswanths-projects-c59197d6.vercel.app"
-        ]
-    }
-}, supports_credentials=True)
+# ✅ SIMPLE + GLOBAL CORS (FIXED)
+CORS(app, supports_credentials=True)
+
+# ✅ FORCE CORS HEADERS (VERY IMPORTANT)
+@app.after_request
+def apply_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
 
 jwt = JWTManager(app)
 
@@ -36,7 +37,7 @@ app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(market_bp, url_prefix='/api/market')
 
-# ─── APScheduler ─────────────────────────────────────────────
+# Scheduler
 def start_scheduler():
     try:
         from apscheduler.schedulers.background import BackgroundScheduler
@@ -51,9 +52,9 @@ def start_scheduler():
             max_instances=1,
         )
         scheduler.start()
-        print("✓ Market price scheduler started (every 6 hours)")
+        print("✓ Market price scheduler started")
     except Exception as e:
-        print(f"⚠ Scheduler could not start: {e}")
+        print(f"⚠ Scheduler error: {e}")
 
 # Root endpoint
 @app.route('/')
@@ -92,14 +93,11 @@ def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is missing'}), 401
 
 if __name__ == '__main__':
-    print("=" * 55)
-    print("  Scrap Inventory Management API  v2.0")
-    print("  Running on Render")
-    print("=" * 55)
+    print("=" * 50)
+    print("Scrap Inventory API Running on Render")
+    print("=" * 50)
 
     start_scheduler()
 
-    # ✅ FIXED PORT FOR RENDER
     port = int(os.environ.get("PORT", 5000))
-
     app.run(host='0.0.0.0', port=port, debug=False)
