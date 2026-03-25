@@ -85,8 +85,13 @@ def login():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        # 🔴 FIX: ensure password is bytes
-        stored_password = user['password']
+        # ✅ SAFE PASSWORD HANDLING
+        stored_password = user.get('password')
+
+        if not stored_password:
+            return jsonify({'error': 'Password not set'}), 500
+
+        # convert to bytes if needed
         if isinstance(stored_password, str):
             stored_password = stored_password.encode('utf-8')
 
@@ -105,9 +110,8 @@ def login():
         }), 200
 
     except Exception as e:
-        print("🔥 LOGIN ERROR:", str(e))  # THIS WILL SHOW IN LOGS
-        return jsonify({'error': 'Internal server error'}), 500
-
+        print("🔥 LOGIN ERROR:", str(e))  # VERY IMPORTANT
+        return jsonify({'error': str(e)}), 500
 @auth_bp.route('/profile', methods=['GET'])
 @jwt_required_custom
 def get_profile():
