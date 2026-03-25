@@ -88,7 +88,12 @@ def login():
         if not bcrypt.checkpw(password.encode('utf-8'), stored_password):
             return jsonify({'error': 'Invalid password'}), 401
 
-        token = create_access_token(identity=str(user['_id']))
+        token = create_access_token(
+            identity=str(user['_id']),
+            additional_claims={
+                "role": user.get("role", "user")
+            }
+        )
 
         return jsonify({
             'message': 'Login successful',
