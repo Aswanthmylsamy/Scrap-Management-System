@@ -92,7 +92,7 @@ def login():
 
         return jsonify({
             'message': 'Login successful',
-            'token': token,
+            'access_token': token,
             'user': {
                 'email': user['email'],
                 'role': user.get('role', 'user')
