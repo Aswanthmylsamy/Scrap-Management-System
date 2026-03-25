@@ -17,13 +17,22 @@ class User:
         }
     
     @staticmethod
-    def serialize(user):
+    def serialize(item):
         """Convert MongoDB document to JSON-serializable dict"""
-        if user:
-            user['_id'] = str(user['_id'])
-            # Don't send password hash to client
-            user.pop('password_hash', None)
-            return user
+        if item:
+            return {
+                "_id": str(item.get("_id")),
+                "name": item.get("name"),
+                "category": item.get("category"),
+                "quantity": float(item.get("quantity", 0)),   # ✅ FIX
+                "unit": item.get("unit"),
+                "unit_price": float(item.get("unit_price", 0)),  # ✅ FIX
+                "total_value": float(item.get("total_value", 0)), # ✅ FIX
+                "description": item.get("description"),
+                "date_added": item.get("date_added"),
+                "last_updated": item.get("last_updated"),
+                "updated_by": str(item.get("updated_by")) if item.get("updated_by") else None
+            }
         return None
 
 
