@@ -91,7 +91,7 @@ const Dashboard = () => {
                             <FiDollarSign size={28} />
                         </div>
                         <div className="stat-info">
-                            <h3>₹{(stats?.total_value || 0).toFixed(2)}</h3>
+                            <h3>₹{Number(stats?.total_value || 0).toFixed(2)}</h3>
                             <p>Total Value</p>
                         </div>
                     </div>
@@ -172,8 +172,8 @@ const Dashboard = () => {
                                             <td className="item-name">{item.name}</td>
                                             <td><span className="category-badge">{item.category}</span></td>
                                             <td>{item.quantity} {item.unit}</td>
-                                            <td>₹{item.unit_price.toFixed(2)}</td>
-                                            <td className="value-cell">₹{item.total_value.toFixed(2)}</td>
+                                            <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
+                                            <td className="value-cell">₹{Number(item.total_value || 0).toFixed(2)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
