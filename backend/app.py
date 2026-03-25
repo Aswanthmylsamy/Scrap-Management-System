@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from config import Config
 import logging
+import os
 
 # Import blueprints
 from routes.auth import auth_bp
@@ -18,12 +19,15 @@ app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
 
-# Initialize extensions
-CORS(app,
-     origins=Config.CORS_ORIGINS.split(','),
-     supports_credentials=True,
-     allow_headers=["Content-Type", "Authorization"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+# ✅ FIXED CORS (VERY IMPORTANT)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://scrap-management-system-6a4rjwi7a-aswanths-projects-c59197d6.vercel.app"
+        ]
+    }
+}, supports_credentials=True)
+
 jwt = JWTManager(app)
 
 # Register blueprints
@@ -32,9 +36,8 @@ app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(market_bp, url_prefix='/api/market')
 
-# ─── APScheduler ──────────────────────────────────────────────────────────────
+# ─── APScheduler ─────────────────────────────────────────────
 def start_scheduler():
-    """Start background job to refresh market prices every 6 hours."""
     try:
         from apscheduler.schedulers.background import BackgroundScheduler
         from apscheduler.triggers.interval import IntervalTrigger
@@ -44,7 +47,6 @@ def start_scheduler():
             func=refresh_all_prices,
             trigger=IntervalTrigger(hours=6),
             id='refresh_market_prices',
-            name='Refresh Market Prices',
             replace_existing=True,
             max_instances=1,
         )
@@ -92,8 +94,12 @@ def missing_token_callback(error):
 if __name__ == '__main__':
     print("=" * 55)
     print("  Scrap Inventory Management API  v2.0")
-    print("  Market Price Monitor  — ACTIVE")
-    print("  Running on http://localhost:5000")
+    print("  Running on Render")
     print("=" * 55)
+
     start_scheduler()
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+
+    # ✅ FIXED PORT FOR RENDER
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(host='0.0.0.0', port=port, debug=False)
