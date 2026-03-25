@@ -331,7 +331,7 @@ const AdminPanel = () => {
                                 {formData.quantity && formData.unit_price && (
                                     <div className="total-value-preview">
                                         <strong>Total Value: </strong>
-                                        ₹{(parseFloat(formData.quantity) * parseFloat(formData.unit_price)).toFixed(2)}
+                                        ₹{(Number(formData.quantity || 0) * Number(formData.unit_price || 0)).toFixed(2)}
                                     </div>
                                 )}
 
