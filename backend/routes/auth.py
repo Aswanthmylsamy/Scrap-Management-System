@@ -68,44 +68,45 @@ def signup():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """User login"""
     try:
         data = request.get_json()
-        
-        # Validate required fields
-        if not data.get('email') or not data.get('password'):
-            return jsonify({'error': 'Email and password are required'}), 400
-        
-        # Find user
-        user = users_collection.find_one({'email': data['email']})
+
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return jsonify({'error': 'Email and password required'}), 400
+
+        user = users_collection.find_one({'email': email})
+
         if not user:
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
-        # Verify password
-        if not bcrypt.checkpw(data['password'].encode('utf-8'), user['password_hash'].encode('utf-8')):
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
-        # Create access token
-        additional_claims = {'role': user['role']}
-        access_token = create_access_token(
-            identity=str(user['_id']),
-            additional_claims=additional_claims
-        )
-        
+            return jsonify({'error': 'User not found'}), 404
+
+        # 🔴 FIX: ensure password is bytes
+        stored_password = user['password']
+        if isinstance(stored_password, str):
+            stored_password = stored_password.encode('utf-8')
+
+        if not bcrypt.checkpw(password.encode('utf-8'), stored_password):
+            return jsonify({'error': 'Invalid password'}), 401
+
+        token = create_access_token(identity=str(user['_id']))
+
         return jsonify({
             'message': 'Login successful',
-            'access_token': access_token,
+            'token': token,
             'user': {
-                'id': str(user['_id']),
-                'username': user['username'],
                 'email': user['email'],
-                'role': user['role']
+                'role': user.get('role', 'user')
             }
         }), 200
-        
-    except Exception as e:
-        return jsonify({'error': 'Login failed', 'message': str(e)}), 500
 
+    except Exception as e:
+        print("🔥 LOGIN ERROR:", str(e))  # THIS WILL SHOW IN LOGS
+        return jsonify({'error': 'Internal server error'}), 500
 
 @auth_bp.route('/profile', methods=['GET'])
 @jwt_required_custom
