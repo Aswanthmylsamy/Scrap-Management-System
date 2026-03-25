@@ -79,7 +79,7 @@ def login():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        stored_password = user.get('password')
+        stored_password = user.get('password_hash')
 
         # 🔥 HANDLE ALL CASES
         if isinstance(stored_password, str):
