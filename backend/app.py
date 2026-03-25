@@ -18,17 +18,29 @@ app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
 
-# ✅ SIMPLE + GLOBAL CORS (FIXED)
-CORS(app, supports_credentials=True)
+# ✅ FINAL GLOBAL CORS FIX
+CORS(
+    app,
+    origins="*",
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    supports_credentials=True
+)
 
-# ✅ FORCE CORS HEADERS (VERY IMPORTANT)
+# ✅ HANDLE PREFLIGHT REQUESTS
+@app.route('/api/<path:path>', methods=["OPTIONS"])
+def handle_options(path):
+    return '', 200
+
+# ✅ FORCE CORS HEADERS ON EVERY RESPONSE
 @app.after_request
-def apply_cors(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     return response
 
+# JWT setup
 jwt = JWTManager(app)
 
 # Register blueprints
@@ -92,6 +104,7 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is missing'}), 401
 
+# Run app
 if __name__ == '__main__':
     print("=" * 50)
     print("Scrap Inventory API Running on Render")
