@@ -7,7 +7,7 @@ load_dotenv()
 
 class Config:
     """Application configuration"""
-    MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/scrap_inventory')
+    MONGODB_URI = os.getenv('MONGODB_URI')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'dev-secret-key-please-change')
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000')
