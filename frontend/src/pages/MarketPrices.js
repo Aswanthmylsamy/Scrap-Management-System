@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import { marketAPI } from '../services/api';
 import {
     FiTrendingUp, FiTrendingDown, FiMinus,
-    FiRefreshCw, FiDollarSign, FiPackage,
+    FiRefreshCw, FiPackage,
     FiAlertCircle, FiCheckCircle, FiClock,
     FiArrowUp, FiArrowDown, FiZap
 } from 'react-icons/fi';
