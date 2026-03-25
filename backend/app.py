@@ -18,27 +18,8 @@ app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
 
-# ✅ FINAL GLOBAL CORS FIX
-CORS(
-    app,
-    origins="*",
-    allow_headers=["Content-Type", "Authorization"],
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    supports_credentials=True
-)
-
-# ✅ HANDLE PREFLIGHT REQUESTS
-@app.route('/api/<path:path>', methods=["OPTIONS"])
-def handle_options(path):
-    return '', 200
-
-# ✅ FORCE CORS HEADERS ON EVERY RESPONSE
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    return response
+# ✅ SINGLE CLEAN CORS CONFIG (NO CONFLICTS)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # JWT setup
 jwt = JWTManager(app)
