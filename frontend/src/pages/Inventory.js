@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { inventoryAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import { FiSearch, FiFilter } from 'react-icons/fi';
@@ -11,11 +11,8 @@ const Inventory = () => {
     const [category, setCategory] = useState('');
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
 
-    useEffect(() => {
-        fetchItems();
-    }, [pagination.page, search, category]);
-
-    const fetchItems = async () => {
+    // ✅ FIX: useCallback to avoid ESLint + infinite loop
+    const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
             const response = await inventoryAPI.getAll({
@@ -34,12 +31,16 @@ const Inventory = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pagination.page, pagination.limit, search, category]);
+
+    // ✅ FIX: only depend on fetchItems
+    useEffect(() => {
+        fetchItems();
+    }, [fetchItems]);
 
     const handleSearch = (e) => {
         e.preventDefault();
         setPagination(prev => ({ ...prev, page: 1 }));
-        fetchItems();
     };
 
     const handlePageChange = (newPage) => {
