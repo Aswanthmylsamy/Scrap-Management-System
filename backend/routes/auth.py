@@ -71,27 +71,17 @@ def login():
     try:
         data = request.get_json()
 
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-
         email = data.get('email')
         password = data.get('password')
-
-        if not email or not password:
-            return jsonify({'error': 'Email and password required'}), 400
 
         user = users_collection.find_one({'email': email})
 
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        # ✅ SAFE PASSWORD HANDLING
         stored_password = user.get('password')
 
-        if not stored_password:
-            return jsonify({'error': 'Password not set'}), 500
-
-        # convert to bytes if needed
+        # 🔥 HANDLE ALL CASES
         if isinstance(stored_password, str):
             stored_password = stored_password.encode('utf-8')
 
@@ -110,8 +100,9 @@ def login():
         }), 200
 
     except Exception as e:
-        print("🔥 LOGIN ERROR:", str(e))  # VERY IMPORTANT
+        print("🔥 LOGIN ERROR:", str(e))
         return jsonify({'error': str(e)}), 500
+
 @auth_bp.route('/profile', methods=['GET'])
 @jwt_required_custom
 def get_profile():
