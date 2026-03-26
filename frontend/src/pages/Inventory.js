@@ -118,8 +118,8 @@ const Inventory = () => {
                                             <td><span className="category-badge">{item.category}</span></td>
                                             <td className="quantity-cell">{item.quantity}</td>
                                             <td>{item.unit}</td>
-                                            <td>₹{item.unit_price.toFixed(2)}</td>
-                                            <td className="value-cell">₹{item.total_value.toFixed(2)}</td>
+                                            <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
+                                            <td className="value-cell">₹{Number(item.total_value || 0).toFixed(2)}</td>
                                             <td className="description-cell">{item.description || 'N/A'}</td>
                                         </tr>
                                     ))}

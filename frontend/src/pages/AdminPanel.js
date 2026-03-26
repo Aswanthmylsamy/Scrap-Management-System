@@ -49,16 +49,24 @@ const AdminPanel = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // ✅ FIXED handleSubmit
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const payload = {
+                ...formData,
+                quantity: Number(formData.quantity),
+                unit_price: Number(formData.unit_price)
+            };
+
             if (editingItem) {
-                await inventoryAPI.update(editingItem._id, formData);
+                await inventoryAPI.update(editingItem._id, payload);
                 alert('Item updated successfully!');
             } else {
-                await inventoryAPI.create(formData);
+                await inventoryAPI.create(payload);
                 alert('Item added successfully!');
             }
+
             resetForm();
             fetchItems();
         } catch (error) {
@@ -180,8 +188,13 @@ const AdminPanel = () => {
                                             <td className="item-name">{item.name}</td>
                                             <td><span className="category-badge">{item.category}</span></td>
                                             <td>{item.quantity} {item.unit}</td>
-                                            <td>₹{item.unit_price.toFixed(2)}</td>
-                                            <td className="value-cell">₹{item.total_value.toFixed(2)}</td>
+
+                                            {/* ✅ FIXED HERE */}
+                                            <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
+                                            <td className="value-cell">
+                                                ₹{Number(item.total_value || 0).toFixed(2)}
+                                            </td>
+
                                             <td className="actions-cell">
                                                 <button className="btn-icon edit" onClick={() => handleEdit(item)}>
                                                     <FiEdit2 size={16} />
@@ -260,7 +273,6 @@ const AdminPanel = () => {
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             required
-                                            placeholder="e.g., Copper Wire"
                                         />
                                     </div>
 
@@ -287,8 +299,6 @@ const AdminPanel = () => {
                                             value={formData.quantity}
                                             onChange={handleInputChange}
                                             required
-                                            step="0.01"
-                                            placeholder="e.g., 100"
                                         />
                                     </div>
 
@@ -296,51 +306,29 @@ const AdminPanel = () => {
                                         <label>Unit *</label>
                                         <select name="unit" value={formData.unit} onChange={handleInputChange} required>
                                             <option value="">Select Unit</option>
-                                            <option value="kg">Kilograms (kg)</option>
-                                            <option value="tons">Tons</option>
-                                            <option value="pieces">Pieces</option>
-                                            <option value="lbs">Pounds (lbs)</option>
+                                            <option value="kg">kg</option>
+                                            <option value="tons">tons</option>
+                                            <option value="pieces">pieces</option>
+                                            <option value="lbs">lbs</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Unit Price (₹) *</label>
+                                    <label>Unit Price *</label>
                                     <input
                                         type="number"
                                         name="unit_price"
                                         value={formData.unit_price}
                                         onChange={handleInputChange}
                                         required
-                                        step="0.01"
-                                        placeholder="e.g., 2.50"
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label>Description</label>
-                                    <textarea
-                                        name="description"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                        rows="3"
-                                        placeholder="Optional description..."
-                                    ></textarea>
-                                </div>
-
-                                {formData.quantity && formData.unit_price && (
-                                    <div className="total-value-preview">
-                                        <strong>Total Value: </strong>
-                                        ₹{(Number(formData.quantity || 0) * Number(formData.unit_price || 0)).toFixed(2)}
-                                    </div>
-                                )}
-
                                 <div className="modal-actions">
-                                    <button type="button" className="btn-secondary" onClick={resetForm}>
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn-primary">
-                                        {editingItem ? 'Update Item' : 'Add Item'}
+                                    <button type="button" onClick={resetForm}>Cancel</button>
+                                    <button type="submit">
+                                        {editingItem ? 'Update' : 'Add'}
                                     </button>
                                 </div>
                             </form>
