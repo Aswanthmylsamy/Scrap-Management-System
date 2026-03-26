@@ -10,6 +10,7 @@ const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+
     const [formData, setFormData] = useState({
         name: '',
         category: '',
@@ -49,7 +50,6 @@ const AdminPanel = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // ✅ FIXED handleSubmit
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -88,36 +88,21 @@ const AdminPanel = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this item?')) {
-            try {
-                await inventoryAPI.delete(id);
-                alert('Item deleted successfully!');
-                fetchItems();
-            } catch (error) {
-                alert('Failed to delete item: ' + (error.response?.data?.error || error.message));
-            }
+        if (window.confirm('Are you sure?')) {
+            await inventoryAPI.delete(id);
+            fetchItems();
         }
     };
 
-    const handleUserRoleChange = async (userId, newRole) => {
-        try {
-            await adminAPI.updateUser(userId, { role: newRole });
-            alert('User role updated successfully!');
-            fetchUsers();
-        } catch (error) {
-            alert('Failed to update user: ' + (error.response?.data?.error || error.message));
-        }
+    const handleUserRoleChange = async (userId, role) => {
+        await adminAPI.updateUser(userId, { role });
+        fetchUsers();
     };
 
     const handleDeleteUser = async (userId) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await adminAPI.deleteUser(userId);
-                alert('User deleted successfully!');
-                fetchUsers();
-            } catch (error) {
-                alert('Failed to delete user: ' + (error.response?.data?.error || error.message));
-            }
+        if (window.confirm('Delete user?')) {
+            await adminAPI.deleteUser(userId);
+            fetchUsers();
         }
     };
 
@@ -138,6 +123,7 @@ const AdminPanel = () => {
         <>
             <Navbar />
             <div className="admin-container">
+
                 <div className="admin-header">
                     <h1>Admin Panel</h1>
                     <p>Manage inventory and users</p>
@@ -148,193 +134,141 @@ const AdminPanel = () => {
                         className={`tab ${activeTab === 'inventory' ? 'active' : ''}`}
                         onClick={() => setActiveTab('inventory')}
                     >
-                        <FiPackage size={18} />
-                        Inventory Management
+                        <FiPackage /> Inventory
                     </button>
+
                     <button
                         className={`tab ${activeTab === 'users' ? 'active' : ''}`}
                         onClick={() => setActiveTab('users')}
                     >
-                        <FiUsers size={18} />
-                        User Management
+                        <FiUsers /> Users
                     </button>
                 </div>
 
+                {/* INVENTORY */}
                 {activeTab === 'inventory' && (
                     <div className="tab-content">
+
                         <div className="content-header">
                             <h2>Inventory Items</h2>
                             <button className="btn-primary" onClick={() => setShowModal(true)}>
-                                <FiPlus size={18} />
-                                Add New Item
+                                <FiPlus /> Add Item
                             </button>
                         </div>
 
-                        <div className="admin-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Total Value</th>
-                                        <th>Actions</th>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {items.map(item => (
+                                    <tr key={item._id}>
+                                        <td>{item.name}</td>
+                                        <td>{item.category}</td>
+                                        <td>{item.quantity} {item.unit}</td>
+                                        <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
+                                        <td>₹{Number(item.total_value || 0).toFixed(2)}</td>
+
+                                        <td>
+                                            <button onClick={() => handleEdit(item)}>
+                                                <FiEdit2 />
+                                            </button>
+                                            <button onClick={() => handleDelete(item._id)}>
+                                                <FiTrash2 />
+                                            </button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {items.map((item) => (
-                                        <tr key={item._id}>
-                                            <td className="item-name">{item.name}</td>
-                                            <td><span className="category-badge">{item.category}</span></td>
-                                            <td>{item.quantity} {item.unit}</td>
-
-                                            {/* ✅ FIXED HERE */}
-                                            <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
-                                            <td className="value-cell">
-                                                ₹{Number(item.total_value || 0).toFixed(2)}
-                                            </td>
-
-                                            <td className="actions-cell">
-                                                <button className="btn-icon edit" onClick={() => handleEdit(item)}>
-                                                    <FiEdit2 size={16} />
-                                                </button>
-                                                <button className="btn-icon delete" onClick={() => handleDelete(item._id)}>
-                                                    <FiTrash2 size={16} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 
+                {/* USERS */}
                 {activeTab === 'users' && (
                     <div className="tab-content">
-                        <div className="content-header">
-                            <h2>User Management</h2>
-                        </div>
+                        <h2>User Management</h2>
 
-                        <div className="admin-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {users.map(user => (
+                                    <tr key={user._id}>
+                                        <td>{user.username || user.name || "N/A"}</td>
+                                        <td>{user.email || "N/A"}</td>
+
+                                        <td>
+                                            <select
+                                                value={user.role}
+                                                onChange={(e) => handleUserRoleChange(user._id, e.target.value)}
+                                            >
+                                                <option value="user">User</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <button onClick={() => handleDeleteUser(user._id)}>
+                                                <FiTrash2 />
+                                            </button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {users.map((user) => (
-                                        <tr key={user._id}>
-                                            <td className="item-name">
-                                                {user.username || user.name || "N/A"}
-                                            </td>
-                                            <td>
-                                                {user.email || user.email_id || "N/A"}
-                                            </td>
-                                            <td>
-                                                <select
-                                                    value={user.role}
-                                                    onChange={(e) => handleUserRoleChange(user._id, e.target.value)}
-                                                    className="role-select"
-                                                >
-                                                    <option value="user">User</option>
-                                                    <option value="admin">Admin</option>
-                                                </select>
-                                            </td>
-                                            <td className="actions-cell">
-                                                <button className="btn-icon delete" onClick={() => handleDeleteUser(user._id)}>
-                                                    <FiTrash2 size={16} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 
+                {/* MODAL */}
                 {showModal && (
                     <div className="modal-overlay" onClick={resetForm}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
-                                <button className="close-btn" onClick={resetForm}>&times;</button>
-                            </div>
+
+                            <h2>{editingItem ? 'Edit Item' : 'Add Item'}</h2>
 
                             <form onSubmit={handleSubmit} className="modal-form">
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Item Name *</label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label>Category *</label>
-                                        <select name="category" value={formData.category} onChange={handleInputChange} required>
-                                            <option value="">Select Category</option>
-                                            <option value="Metal">Metal</option>
-                                            <option value="Plastic">Plastic</option>
-                                            <option value="Electronics">Electronics</option>
-                                            <option value="Paper">Paper</option>
-                                            <option value="Glass">Glass</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                <input name="name" placeholder="Item Name" value={formData.name} onChange={handleInputChange} required />
+                                <input name="category" placeholder="Category" value={formData.category} onChange={handleInputChange} required />
+                                <input type="number" name="quantity" placeholder="Quantity" value={formData.quantity} onChange={handleInputChange} required />
+                                <input name="unit" placeholder="Unit" value={formData.unit} onChange={handleInputChange} required />
+                                <input type="number" name="unit_price" placeholder="Unit Price" value={formData.unit_price} onChange={handleInputChange} required />
 
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Quantity *</label>
-                                        <input
-                                            type="number"
-                                            name="quantity"
-                                            value={formData.quantity}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
+                                {/* ✅ Description */}
+                                <textarea
+                                    name="description"
+                                    placeholder="Description"
+                                    value={formData.description}
+                                    onChange={handleInputChange}
+                                />
 
-                                    <div className="form-group">
-                                        <label>Unit *</label>
-                                        <select name="unit" value={formData.unit} onChange={handleInputChange} required>
-                                            <option value="">Select Unit</option>
-                                            <option value="kg">kg</option>
-                                            <option value="tons">tons</option>
-                                            <option value="pieces">pieces</option>
-                                            <option value="lbs">lbs</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Unit Price *</label>
-                                    <input
-                                        type="number"
-                                        name="unit_price"
-                                        value={formData.unit_price}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-
+                                {/* ✅ Buttons */}
                                 <div className="modal-actions">
-                                    <button type="button" onClick={resetForm}>Cancel</button>
-                                    <button type="submit">
-                                        {editingItem ? 'Update' : 'Add'}
+                                    <button type="button" className="btn-secondary" onClick={resetForm}>
+                                        Cancel
+                                    </button>
+
+                                    <button type="submit" className="btn-primary">
+                                        {editingItem ? 'Update Item' : 'Add Item'}
                                     </button>
                                 </div>
+
                             </form>
                         </div>
                     </div>
@@ -345,3 +279,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
