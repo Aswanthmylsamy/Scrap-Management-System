@@ -99,7 +99,9 @@ def login():
             'message': 'Login successful',
             'access_token': token,
             'user': {
-                'email': user['email'],
+                'id': str(user['_id']),
+                'username': user.get('username') or user.get('name'),
+                'email': user.get('email'),
                 'role': user.get('role', 'user')
             }
         }), 200
