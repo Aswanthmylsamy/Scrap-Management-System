@@ -247,6 +247,36 @@
     font-family: inherit;
 }
 
+
+
+
+.btn-secondary {
+    padding: 12px 24px;
+    background: #e2e8f0;
+    color: #2d3748;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+.admin-table th {
+    font-size: 0.95rem;
+}
+
+.admin-table td {
+    font-size: 0.95rem;
+}
+
+
+
+
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {

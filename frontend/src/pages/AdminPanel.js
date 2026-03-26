@@ -21,29 +21,18 @@ const AdminPanel = () => {
     });
 
     useEffect(() => {
-        if (activeTab === 'inventory') {
-            fetchItems();
-        } else {
-            fetchUsers();
-        }
+        if (activeTab === 'inventory') fetchItems();
+        else fetchUsers();
     }, [activeTab]);
 
     const fetchItems = async () => {
-        try {
-            const response = await inventoryAPI.getAll({ page: 1, limit: 100 });
-            setItems(response.data.items);
-        } catch (error) {
-            console.error('Failed to fetch items:', error);
-        }
+        const res = await inventoryAPI.getAll({ page: 1, limit: 100 });
+        setItems(res.data.items);
     };
 
     const fetchUsers = async () => {
-        try {
-            const response = await adminAPI.getAllUsers();
-            setUsers(response.data.users);
-        } catch (error) {
-            console.error('Failed to fetch users:', error);
-        }
+        const res = await adminAPI.getAllUsers();
+        setUsers(res.data.users);
     };
 
     const handleInputChange = (e) => {
@@ -52,56 +41,44 @@ const AdminPanel = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const payload = {
-                ...formData,
-                quantity: Number(formData.quantity),
-                unit_price: Number(formData.unit_price)
-            };
 
-            if (editingItem) {
-                await inventoryAPI.update(editingItem._id, payload);
-                alert('Item updated successfully!');
-            } else {
-                await inventoryAPI.create(payload);
-                alert('Item added successfully!');
-            }
+        const payload = {
+            ...formData,
+            quantity: Number(formData.quantity),
+            unit_price: Number(formData.unit_price)
+        };
 
-            resetForm();
-            fetchItems();
-        } catch (error) {
-            alert('Failed to save item: ' + (error.response?.data?.error || error.message));
+        if (editingItem) {
+            await inventoryAPI.update(editingItem._id, payload);
+        } else {
+            await inventoryAPI.create(payload);
         }
+
+        resetForm();
+        fetchItems();
     };
 
     const handleEdit = (item) => {
         setEditingItem(item);
-        setFormData({
-            name: item.name,
-            category: item.category,
-            quantity: item.quantity,
-            unit: item.unit,
-            unit_price: item.unit_price,
-            description: item.description || ''
-        });
+        setFormData(item);
         setShowModal(true);
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure?')) {
+        if (window.confirm('Delete item?')) {
             await inventoryAPI.delete(id);
             fetchItems();
         }
     };
 
-    const handleUserRoleChange = async (userId, role) => {
-        await adminAPI.updateUser(userId, { role });
+    const handleUserRoleChange = async (id, role) => {
+        await adminAPI.updateUser(id, { role });
         fetchUsers();
     };
 
-    const handleDeleteUser = async (userId) => {
+    const handleDeleteUser = async (id) => {
         if (window.confirm('Delete user?')) {
-            await adminAPI.deleteUser(userId);
+            await adminAPI.deleteUser(id);
             fetchUsers();
         }
     };
@@ -122,13 +99,14 @@ const AdminPanel = () => {
     return (
         <>
             <Navbar />
-            <div className="admin-container">
 
+            <div className="admin-container">
                 <div className="admin-header">
                     <h1>Admin Panel</h1>
                     <p>Manage inventory and users</p>
                 </div>
 
+                {/* Tabs */}
                 <div className="tabs">
                     <button
                         className={`tab ${activeTab === 'inventory' ? 'active' : ''}`}
@@ -156,82 +134,86 @@ const AdminPanel = () => {
                             </button>
                         </div>
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Total</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {items.map(item => (
-                                    <tr key={item._id}>
-                                        <td>{item.name}</td>
-                                        <td>{item.category}</td>
-                                        <td>{item.quantity} {item.unit}</td>
-                                        <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
-                                        <td>₹{Number(item.total_value || 0).toFixed(2)}</td>
-
-                                        <td>
-                                            <button onClick={() => handleEdit(item)}>
-                                                <FiEdit2 />
-                                            </button>
-                                            <button onClick={() => handleDelete(item._id)}>
-                                                <FiTrash2 />
-                                            </button>
-                                        </td>
+                        <div className="admin-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody>
+                                    {items.map(item => (
+                                        <tr key={item._id}>
+                                            <td>{item.name}</td>
+                                            <td>{item.category}</td>
+                                            <td className="quantity-cell">{item.quantity} {item.unit}</td>
+                                            <td>₹{Number(item.unit_price || 0).toFixed(2)}</td>
+                                            <td>₹{Number(item.total_value || 0).toFixed(2)}</td>
+
+                                            <td className="actions-cell">
+                                                <button className="btn-icon edit" onClick={() => handleEdit(item)}>
+                                                    <FiEdit2 size={16} />
+                                                </button>
+                                                <button className="btn-icon delete" onClick={() => handleDelete(item._id)}>
+                                                    <FiTrash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 
                 {/* USERS */}
                 {activeTab === 'users' && (
                     <div className="tab-content">
-                        <h2>User Management</h2>
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {users.map(user => (
-                                    <tr key={user._id}>
-                                        <td>{user.username || user.name || "N/A"}</td>
-                                        <td>{user.email || "N/A"}</td>
-
-                                        <td>
-                                            <select
-                                                value={user.role}
-                                                onChange={(e) => handleUserRoleChange(user._id, e.target.value)}
-                                            >
-                                                <option value="user">User</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                        </td>
-
-                                        <td>
-                                            <button onClick={() => handleDeleteUser(user._id)}>
-                                                <FiTrash2 />
-                                            </button>
-                                        </td>
+                        <div className="admin-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody>
+                                    {users.map(user => (
+                                        <tr key={user._id}>
+                                            <td>{user.username || user.name || "N/A"}</td>
+                                            <td>{user.email || "N/A"}</td>
+
+                                            <td>
+                                                <select
+                                                    className="role-select"
+                                                    value={user.role}
+                                                    onChange={(e) => handleUserRoleChange(user._id, e.target.value)}
+                                                >
+                                                    <option value="user">User</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                            </td>
+
+                                            <td className="actions-cell">
+                                                <button className="btn-icon delete" onClick={() => handleDeleteUser(user._id)}>
+                                                    <FiTrash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 
@@ -240,25 +222,47 @@ const AdminPanel = () => {
                     <div className="modal-overlay" onClick={resetForm}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
-                            <h2>{editingItem ? 'Edit Item' : 'Add Item'}</h2>
+                            <div className="modal-header">
+                                <h2>{editingItem ? 'Edit Item' : 'Add Item'}</h2>
+                                <button className="close-btn" onClick={resetForm}>×</button>
+                            </div>
 
                             <form onSubmit={handleSubmit} className="modal-form">
 
-                                <input name="name" placeholder="Item Name" value={formData.name} onChange={handleInputChange} required />
-                                <input name="category" placeholder="Category" value={formData.category} onChange={handleInputChange} required />
-                                <input type="number" name="quantity" placeholder="Quantity" value={formData.quantity} onChange={handleInputChange} required />
-                                <input name="unit" placeholder="Unit" value={formData.unit} onChange={handleInputChange} required />
-                                <input type="number" name="unit_price" placeholder="Unit Price" value={formData.unit_price} onChange={handleInputChange} required />
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Name</label>
+                                        <input name="name" value={formData.name} onChange={handleInputChange} required />
+                                    </div>
 
-                                {/* ✅ Description */}
-                                <textarea
-                                    name="description"
-                                    placeholder="Description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                />
+                                    <div className="form-group">
+                                        <label>Category</label>
+                                        <input name="category" value={formData.category} onChange={handleInputChange} required />
+                                    </div>
+                                </div>
 
-                                {/* ✅ Buttons */}
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" value={formData.quantity} onChange={handleInputChange} required />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Unit</label>
+                                        <input name="unit" value={formData.unit} onChange={handleInputChange} required />
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Unit Price</label>
+                                    <input type="number" name="unit_price" value={formData.unit_price} onChange={handleInputChange} required />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <textarea name="description" value={formData.description} onChange={handleInputChange} />
+                                </div>
+
                                 <div className="modal-actions">
                                     <button type="button" className="btn-secondary" onClick={resetForm}>
                                         Cancel
