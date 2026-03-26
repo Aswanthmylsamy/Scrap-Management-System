@@ -299,11 +299,17 @@
     font-size: 1.1rem;
 }
 
-.modal-actions {
+.modal-actions button {
+    height: 45px;
+    min-width: 130px;
+    padding: 0 20px;   /* remove vertical padding difference */
+    font-size: 0.95rem;
+
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
 }
 
 .btn-primary {
