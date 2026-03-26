@@ -259,6 +259,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+
+    /* ✅ MATCH PRIMARY BUTTON */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn-secondary:hover {
