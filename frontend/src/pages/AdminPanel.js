@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { inventoryAPI, adminAPI } from '../services/api';
 import Navbar from '../components/Navbar';
@@ -60,7 +61,14 @@ const AdminPanel = () => {
 
     const handleEdit = (item) => {
         setEditingItem(item);
-        setFormData(item);
+        setFormData({
+            name: item.name,
+            category: item.category,
+            quantity: item.quantity,
+            unit: item.unit,
+            unit_price: item.unit_price,
+            description: item.description || ''
+        });
         setShowModal(true);
     };
 
@@ -232,35 +240,84 @@ const AdminPanel = () => {
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label>Name</label>
-                                        <input name="name" value={formData.name} onChange={handleInputChange} required />
+                                        <input
+                                            name="name"
+                                            placeholder="Enter item name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
                                     </div>
 
                                     <div className="form-group">
                                         <label>Category</label>
-                                        <input name="category" value={formData.category} onChange={handleInputChange} required />
+                                        <select
+                                            name="category"
+                                            value={formData.category}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
+                                            <option value="">Select Category</option>
+                                            <option value="Metal">Metal</option>
+                                            <option value="Plastic">Plastic</option>
+                                            <option value="Electronics">Electronics</option>
+                                            <option value="Paper">Paper</option>
+                                            <option value="Glass">Glass</option>
+                                            <option value="Other">Other</option>
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label>Quantity</label>
-                                        <input type="number" name="quantity" value={formData.quantity} onChange={handleInputChange} required />
+                                        <input
+                                            type="number"
+                                            name="quantity"
+                                            placeholder="Enter quantity"
+                                            value={formData.quantity}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
                                     </div>
 
                                     <div className="form-group">
                                         <label>Unit</label>
-                                        <input name="unit" value={formData.unit} onChange={handleInputChange} required />
+                                        <select
+                                            name="unit"
+                                            value={formData.unit}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
+                                            <option value="">Select Unit</option>
+                                            <option value="kg">Kilograms (kg)</option>
+                                            <option value="tons">Tons</option>
+                                            <option value="pieces">Pieces</option>
+                                            <option value="lbs">Pounds (lbs)</option>
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div className="form-group">
                                     <label>Unit Price</label>
-                                    <input type="number" name="unit_price" value={formData.unit_price} onChange={handleInputChange} required />
+                                    <input
+                                        type="number"
+                                        name="unit_price"
+                                        placeholder="Enter price per unit"
+                                        value={formData.unit_price}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
                                 </div>
 
                                 <div className="form-group">
                                     <label>Description</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange} />
+                                    <textarea
+                                        name="description"
+                                        placeholder="Enter description (optional)"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                    />
                                 </div>
 
                                 <div className="modal-actions">
