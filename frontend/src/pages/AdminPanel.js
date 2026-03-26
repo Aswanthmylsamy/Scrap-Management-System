@@ -230,8 +230,12 @@ const AdminPanel = () => {
                                 <tbody>
                                     {users.map((user) => (
                                         <tr key={user._id}>
-                                            <td className="item-name">{user.username}</td>
-                                            <td>{user.email}</td>
+                                            <td className="item-name">
+                                                {user.username || user.name || "N/A"}
+                                            </td>
+                                            <td>
+                                                {user.email || user.email_id || "N/A"}
+                                            </td>
                                             <td>
                                                 <select
                                                     value={user.role}
