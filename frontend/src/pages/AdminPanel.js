@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { inventoryAPI, adminAPI } from '../services/api';
 import Navbar from '../components/Navbar';
@@ -20,6 +19,10 @@ const AdminPanel = () => {
         unit_price: '',
         description: ''
     });
+
+    // ✅ NEW: Live Total Calculation
+    const totalValue =
+        Number(formData.quantity || 0) * Number(formData.unit_price || 0);
 
     useEffect(() => {
         if (activeTab === 'inventory') fetchItems();
@@ -114,7 +117,6 @@ const AdminPanel = () => {
                     <p>Manage inventory and users</p>
                 </div>
 
-                {/* Tabs */}
                 <div className="tabs">
                     <button
                         className={`tab ${activeTab === 'inventory' ? 'active' : ''}`}
@@ -131,7 +133,6 @@ const AdminPanel = () => {
                     </button>
                 </div>
 
-                {/* INVENTORY */}
                 {activeTab === 'inventory' && (
                     <div className="tab-content">
 
@@ -180,7 +181,6 @@ const AdminPanel = () => {
                     </div>
                 )}
 
-                {/* USERS */}
                 {activeTab === 'users' && (
                     <div className="tab-content">
 
@@ -225,7 +225,6 @@ const AdminPanel = () => {
                     </div>
                 )}
 
-                {/* MODAL */}
                 {showModal && (
                     <div className="modal-overlay" onClick={resetForm}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -240,23 +239,12 @@ const AdminPanel = () => {
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label>Name</label>
-                                        <input
-                                            name="name"
-                                            placeholder="Enter item name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
+                                        <input name="name" placeholder="Enter item name" value={formData.name} onChange={handleInputChange} required />
                                     </div>
 
                                     <div className="form-group">
                                         <label>Category</label>
-                                        <select
-                                            name="category"
-                                            value={formData.category}
-                                            onChange={handleInputChange}
-                                            required
-                                        >
+                                        <select name="category" value={formData.category} onChange={handleInputChange} required>
                                             <option value="">Select Category</option>
                                             <option value="Metal">Metal</option>
                                             <option value="Plastic">Plastic</option>
@@ -271,24 +259,12 @@ const AdminPanel = () => {
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label>Quantity</label>
-                                        <input
-                                            type="number"
-                                            name="quantity"
-                                            placeholder="Enter quantity"
-                                            value={formData.quantity}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
+                                        <input type="number" name="quantity" placeholder="Enter quantity" value={formData.quantity} onChange={handleInputChange} required />
                                     </div>
 
                                     <div className="form-group">
                                         <label>Unit</label>
-                                        <select
-                                            name="unit"
-                                            value={formData.unit}
-                                            onChange={handleInputChange}
-                                            required
-                                        >
+                                        <select name="unit" value={formData.unit} onChange={handleInputChange} required>
                                             <option value="">Select Unit</option>
                                             <option value="kg">Kilograms (kg)</option>
                                             <option value="tons">Tons</option>
@@ -300,24 +276,17 @@ const AdminPanel = () => {
 
                                 <div className="form-group">
                                     <label>Unit Price</label>
-                                    <input
-                                        type="number"
-                                        name="unit_price"
-                                        placeholder="Enter price per unit"
-                                        value={formData.unit_price}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
+                                    <input type="number" name="unit_price" placeholder="Enter price per unit" value={formData.unit_price} onChange={handleInputChange} required />
+                                </div>
+
+                                {/* ✅ NEW: LIVE TOTAL DISPLAY */}
+                                <div className="total-value-preview">
+                                    <strong>Total Value: </strong> ₹{totalValue.toFixed(2)}
                                 </div>
 
                                 <div className="form-group">
                                     <label>Description</label>
-                                    <textarea
-                                        name="description"
-                                        placeholder="Enter description (optional)"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                    />
+                                    <textarea name="description" placeholder="Enter description (optional)" value={formData.description} onChange={handleInputChange} />
                                 </div>
 
                                 <div className="modal-actions">
@@ -340,4 +309,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
