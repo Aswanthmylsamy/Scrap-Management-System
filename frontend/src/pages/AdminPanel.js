@@ -290,14 +290,14 @@ const AdminPanel = () => {
                                 </div>
 
                                 <div className="modal-actions">
-                                    <button type="button" className="btn-secondary" onClick={resetForm}>
+                                    <button type="button" className="btn-secondary">
                                         Cancel
                                     </button>
-
+                                    
                                     <button type="submit" className="btn-primary">
-                                        {editingItem ? 'Update Item' : 'Add Item'}
+                                        Add Item
                                     </button>
-                                </div>
+                                    </div>
 
                             </form>
                         </div>
